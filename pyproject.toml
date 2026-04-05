@@ -1,0 +1,14 @@
+[project]
+name = "auto-create-email"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+authors = [
+    {name = "anti-society-projectx",email = "anti-society-projectx@gmail.com"}
+]
+readme = "README.md"
+dependencies = [
+    "aiolimiter>=1.2.1",
+    "asyncio>=4.0.0",
+    "httpx[socks]>=0.28.1",
+]
