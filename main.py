@@ -6,9 +6,11 @@ import httpx
 from aiolimiter import AsyncLimiter
 
 from src.client import BaseMailClient
+from src.core.console import ConsoleUI
+from src.core.logger import logger
 
 
-async def main():
+async def fetch() -> None:
     proxies = [
         "http://185.76.240.64:10001",
         "http://103.252.89.130:8080",
@@ -47,6 +49,32 @@ async def main():
     print(resp)
     print(time.time() - s)
     await asyncio.gather(*[c.client.aclose() for c in clients])
+
+
+async def main():
+    console_ui = ConsoleUI()
+    console_ui.main()
+    console_ui.show_menu()
+
+    while True:
+        select_action = console_ui.select_action()
+
+        if select_action == 1:
+            # TODO: указать кол-во запросов аккаунтов, указать формулу: [кол-во запросов * кол-во прокси * 2 сервиса (mail.tm & mail.gw)]
+            pass
+
+        elif select_action == 2:
+            # TODO: открыть в браузере/отправить ссылку на тему
+            pass
+
+        elif select_action == 3:
+            # TODO: останавливать программу
+            pass
+
+        else:
+            logger.error("Введите команду из предложенного списка: ")
+            console_ui.show_menu()
+            continue
 
 
 asyncio.run(main())
