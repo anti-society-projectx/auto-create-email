@@ -13,4 +13,5 @@ dependencies = [
     "httpx[socks]>=0.28.1",
     "pyfiglet>=1.0.4",
     "rich>=14.3.3",
+    "termcolor>=3.3.0",
 ]
