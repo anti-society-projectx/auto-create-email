@@ -57,21 +57,26 @@ async def main():
     console_ui.show_menu()
 
     while True:
-        select_action = console_ui.select_action()
+        try:
+            select_action = console_ui.select_action()
 
-        if select_action == 1:
-            # TODO: указать кол-во запросов аккаунтов, указать формулу: [кол-во запросов * кол-во прокси * 2 сервиса (mail.tm & mail.gw)]
-            pass
+            if select_action == 1:
+                # TODO: указать кол-во запросов аккаунтов, указать формулу: [кол-во запросов * кол-во прокси * 2 сервиса (mail.tm & mail.gw)]
+                pass
 
-        elif select_action == 2:
-            # TODO: открыть в браузере/отправить ссылку на тему
-            pass
+            elif select_action == 2:
+                # TODO: открыть в браузере/отправить ссылку на тему
+                pass
 
-        elif select_action == 3:
-            # TODO: останавливать программу
-            pass
+            elif select_action == 3:
+                # TODO: останавливать программу
+                pass
 
-        else:
+            else:
+                logger.error("Введите команду из предложенного списка: ")
+                console_ui.show_menu()
+                continue
+        except ValueError:
             logger.error("Введите команду из предложенного списка: ")
             console_ui.show_menu()
             continue
