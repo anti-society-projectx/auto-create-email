@@ -24,14 +24,13 @@ def retry_fetch(max_retries: int = 3, delay: float = 0.33):
                     if attempt == max_retries:
                         logging.error("Все попытки были исчерпаны. Рекомендую проверить работоспособность прокси %s", proxy_url)
                         return None
-                    logging.info("[%s/%s] Делаю повторный запрос...", attempt, max_retries)
 
                 except:
                     logging.error("Ошибка при HTTP-запросе с прокси: %s", proxy_url)
                     if attempt == max_retries:
                         return None
-                    logging.info("[%s/%s] Делаю повторный запрос...", attempt, max_retries)
 
+                logging.info("[%s/%s] Делаю повторный запрос...", attempt, max_retries)
                 await asyncio.sleep(delay * attempt)
 
         return wrapper

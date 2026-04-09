@@ -1,6 +1,7 @@
 import asyncio
 import random
 import time
+import sys
 
 import httpx
 from aiolimiter import AsyncLimiter
@@ -10,7 +11,7 @@ from src.core.console import ConsoleUI
 from src.core.logger import logger
 
 
-async def fetch() -> None:
+async def fetch(total: int, console_ui: ConsoleUI) -> None:
     proxies = [
         "http://185.76.240.64:10001",
         "http://103.252.89.130:8080",
@@ -30,13 +31,11 @@ async def fetch() -> None:
         clients.append(client_gw)
         clients.append(client_tm)
 
-    total = 3
     s = time.time()
     limiter = AsyncLimiter(6, 0.9)
     tasks = []
 
     for _ in range(total):
-        s = time.time()
         async with limiter:
             for client in clients:
                 if client.client.base_url == "https://api.mail.tm":
@@ -47,38 +46,54 @@ async def fetch() -> None:
 
     resp = await asyncio.gather(*tasks, return_exceptions=True)
     print(resp)
-    print(time.time() - s)
     await asyncio.gather(*[c.client.aclose() for c in clients])
+
+    success = []
+    failed = []
+    time_wasted = time.time() - s
+
+    for account in resp:
+        if account:
+            success.append(account)
+        else:
+            failed.append(account)
+
+
+
+    console_ui.stats_create_accounts(
+        total=int(total * len(proxies) * 2),
+        time_wasted=time_wasted,
+        success=len(success),
+        failed=len(failed)
+    )
 
 
 async def main():
     console_ui = ConsoleUI()
     console_ui.main()
-    console_ui.show_menu()
 
     while True:
+        console_ui.show_menu()
         try:
             select_action = console_ui.select_action()
 
             if select_action == 1:
-                # TODO: указать кол-во запросов аккаунтов, указать формулу: [кол-во запросов * кол-во прокси * 2 сервиса (mail.tm & mail.gw)]
-                pass
+                num_requests = console_ui.run_script()
+                if num_requests:
+                    await fetch(num_requests, console_ui)
 
             elif select_action == 2:
                 # TODO: открыть в браузере/отправить ссылку на тему
                 pass
 
             elif select_action == 3:
-                # TODO: останавливать программу
-                pass
+                sys.exit()
 
             else:
-                logger.error("Введите команду из предложенного списка: ")
-                console_ui.show_menu()
+                logger.error("Неизвестная команда.")
                 continue
         except ValueError:
-            logger.error("Введите команду из предложенного списка: ")
-            console_ui.show_menu()
+            logger.error("Неизвестная команда.")
             continue
 
 

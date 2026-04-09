@@ -10,3 +10,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("app")
+
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
