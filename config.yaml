@@ -1,0 +1,4 @@
+app:
+  version: 1.0
+  output_path: outputs/
+  proxies_list_path: proxies.txt
