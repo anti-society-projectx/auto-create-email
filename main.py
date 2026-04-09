@@ -2,28 +2,40 @@ import asyncio
 import random
 import time
 import sys
+import uuid
+from pathlib import Path
 
 import httpx
 from aiolimiter import AsyncLimiter
 
 from src.client import BaseMailClient
+from src.core.config import YamlConfig
 from src.core.console import ConsoleUI
 from src.core.logger import logger
+from src.utils.files import read_file, create_file, append_file, format_credentials
+from src.utils.proxies import extract_proxies
+
+
+async def worker(client: BaseMailClient, domain: str, limiter: AsyncLimiter):
+    async with limiter:
+        return await client.create_account(domain)
 
 
 async def fetch(total: int, console_ui: ConsoleUI) -> None:
-    proxies = [
-        "http://185.76.240.64:10001",
-        "http://103.252.89.130:8080",
-        "socks5://152.53.155.16:1080",
-        "socks5://206.123.156.209:6090"
-    ]
+    yaml_config = YamlConfig()
+
+    path_proxies = Path(yaml_config.get_proxies_list_path())
+    proxies = extract_proxies(read_file(path_proxies))
+
     clients: list[BaseMailClient] = [
         BaseMailClient(httpx.AsyncClient(base_url="https://api.mail.tm", timeout=10.0)),
         BaseMailClient(httpx.AsyncClient(base_url="https://api.mail.gw", timeout=10.0))
     ]
     mailgw_domains: list[str] = await clients[1].get_available_domains()
     mailtm_domains: list[str] = await clients[0].get_available_domains()
+
+    if not proxies:
+        logger.warning("Для лучшей работы скрипта, добавьте прокси")
 
     for proxy in proxies:
         client_tm = BaseMailClient(httpx.AsyncClient(base_url="https://api.mail.tm", timeout=10.0, proxy=proxy), proxy)
@@ -36,35 +48,38 @@ async def fetch(total: int, console_ui: ConsoleUI) -> None:
     tasks = []
 
     for _ in range(total):
+        for client in clients:
+            if client.client.base_url == "https://api.mail.tm":
+                domain = random.choice(mailtm_domains)
+            else:
+                domain = random.choice(mailgw_domains)
+            tasks.append(asyncio.create_task(worker(client, domain, limiter)))
+
+    success = 0
+    failed = 0
+    outputs_dir = Path(yaml_config.get_outputs_path())
+    output_file = create_file(f"log_{uuid.uuid4()}.txt", outputs_dir)
+
+    for coro in asyncio.as_completed(tasks):
         async with limiter:
-            for client in clients:
-                if client.client.base_url == "https://api.mail.tm":
-                    domain = random.choice(mailtm_domains)
-                else:
-                    domain = random.choice(mailgw_domains)
-                tasks.append(asyncio.create_task(client.create_account(domain)))
+            account = await coro
 
-    resp = await asyncio.gather(*tasks, return_exceptions=True)
-    print(resp)
+            if account:
+                success += 1
+                append_file(format_credentials(account), output_file)
+            else:
+                failed += 1
+
     await asyncio.gather(*[c.client.aclose() for c in clients])
-
-    success = []
-    failed = []
     time_wasted = time.time() - s
-
-    for account in resp:
-        if account:
-            success.append(account)
-        else:
-            failed.append(account)
-
-
+    len_proxies = len(proxies) if proxies else 1
 
     console_ui.stats_create_accounts(
-        total=int(total * len(proxies) * 2),
-        time_wasted=time_wasted,
-        success=len(success),
-        failed=len(failed)
+        total=total * len_proxies * 2 + 2,
+        time_wasted=round(time_wasted),
+        success=success,
+        failed=failed,
+        output_file=output_file
     )
 
 

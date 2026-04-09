@@ -6,7 +6,7 @@ from rich.logging import RichHandler
 logging.basicConfig(
     level=logging.INFO,
     format="%(message)s",
-    handlers=[RichHandler()]
+    handlers=[RichHandler(markup=True)]
 )
 
 logger = logging.getLogger("app")
