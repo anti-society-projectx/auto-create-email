@@ -61,21 +61,19 @@ async def fetch(total: int, console_ui: ConsoleUI) -> None:
     output_file = create_file(f"log_{uuid.uuid4()}.txt", outputs_dir)
 
     for coro in asyncio.as_completed(tasks):
-        async with limiter:
-            account = await coro
+        account = await coro
 
-            if account:
-                success += 1
-                append_file(format_credentials(account), output_file)
-            else:
-                failed += 1
+        if account:
+            success += 1
+            append_file(format_credentials(account), output_file)
+        else:
+            failed += 1
 
     await asyncio.gather(*[c.client.aclose() for c in clients])
     time_wasted = time.time() - s
-    len_proxies = len(proxies) if proxies else 1
 
     console_ui.stats_create_accounts(
-        total=total * len_proxies * 2 + 2,
+        total=len(clients),
         time_wasted=round(time_wasted),
         success=success,
         failed=failed,
@@ -98,10 +96,6 @@ async def main():
                     await fetch(num_requests, console_ui)
 
             elif select_action == 2:
-                # TODO: открыть в браузере/отправить ссылку на тему
-                pass
-
-            elif select_action == 3:
                 sys.exit()
 
             else:

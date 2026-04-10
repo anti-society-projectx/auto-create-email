@@ -9,7 +9,6 @@ authors = [
 readme = "README.md"
 dependencies = [
     "aiolimiter>=1.2.1",
-    "asyncio>=4.0.0",
     "httpx[socks]>=0.28.1",
     "pyfiglet>=1.0.4",
     "pyyaml>=6.0.3",

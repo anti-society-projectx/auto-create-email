@@ -24,8 +24,7 @@ class ConsoleUI:
     def show_menu(self) -> None:
         menu = (
             f"\n{4*' '}[cyan]1.[/cyan] Запуск\n"
-            f"{4*' '}[cyan]2.[/cyan] Настройки\n"
-            f"{4*' '}[cyan]3.[/cyan] Выйти\n"
+            f"{4*' '}[cyan]2.[/cyan] Выйти\n"
         )
 
         self.console.print(
