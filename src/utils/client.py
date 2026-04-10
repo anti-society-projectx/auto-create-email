@@ -1,8 +1,9 @@
 import asyncio
 import functools
-import logging
 
 import httpx
+
+from src.core.logger import logger
 
 
 def retry_fetch(max_retries: int = 3, delay: float = 0.33):
@@ -20,17 +21,17 @@ def retry_fetch(max_retries: int = 3, delay: float = 0.33):
                 try:
                     return await func(*args, **kwargs)
                 except (httpx.ConnectTimeout, httpx.ProxyError, httpx.ConnectError):
-                    logging.error("Тайм-аут запроса с использованием прокси: %s", proxy_url)
+                    logger.error("Тайм-аут запроса с использованием прокси: %s", proxy_url)
                     if attempt == max_retries:
-                        logging.error("Все попытки были исчерпаны. Рекомендую проверить работоспособность прокси %s", proxy_url)
+                        logger.error("Все попытки были исчерпаны. Рекомендую проверить работоспособность прокси %s", proxy_url)
                         return None
 
                 except:
-                    logging.error("Ошибка при HTTP-запросе с прокси: %s", proxy_url)
+                    logger.error("Ошибка при HTTP-запросе с прокси: %s", proxy_url)
                     if attempt == max_retries:
                         return None
 
-                logging.info("[%s/%s] Делаю повторный запрос...", attempt, max_retries)
+                logger.info("[%s/%s] Делаю повторный запрос...", attempt, max_retries)
                 await asyncio.sleep(delay * attempt)
 
         return wrapper

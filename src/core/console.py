@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pyfiglet import figlet_format
 from rich.console import Console
 from rich.align import Align
@@ -22,8 +24,7 @@ class ConsoleUI:
     def show_menu(self) -> None:
         menu = (
             f"\n{4*' '}[cyan]1.[/cyan] Запуск\n"
-            f"{4*' '}[cyan]2.[/cyan] Настройки\n"
-            f"{4*' '}[cyan]3.[/cyan] Выйти\n"
+            f"{4*' '}[cyan]2.[/cyan] Выйти\n"
         )
 
         self.console.print(
@@ -48,20 +49,22 @@ class ConsoleUI:
         )
         return int(self.console.input(input_text))
 
-    def stats_create_accounts(self, total: int, time_wasted: float, success: int, failed: int) -> None:
+    def stats_create_accounts(self, total: int, time_wasted: float, success: int, failed: int, output_file: Path) -> None:
         """
         Выводит статистику создания аккаунтов.
         :param total: Общее количество аккаунтов.
         :param time_wasted: Общее время, которое было затрачено на создание всех аккаунтов.
         :param success: Количество аккаунтов, которые были успешно созданы.
         :param failed: Количество аккаунтов, которые не были созданы.
+        :param output_file: Файл, в который был записан результат
         """
         stats_text = (
             f"Количество создаваемых аккаунтов: [cyan]{total}[/cyan]\n"
             f"Количество созданных аккаунтов: [green]{success}[/green]\n"
             f"Количество не созданных аккаунтов: [red]{failed}[/red]\n"
             f"Общее время затраченное на создание аккаунтов: [cyan]{time_wasted}[/cyan]\n"
-            f"Среднее время на создание одного аккаунта: [cyan]{round(time_wasted/2, 2)}[/cyan]"
+            f"Среднее время на создание одного аккаунта: [cyan]{round(time_wasted/total, 2)}[/cyan]\n"
+            f"Лог с почтами: [dim i]{output_file.resolve()}[/dim i]"
         )
         panel = Panel(
                 stats_text,
