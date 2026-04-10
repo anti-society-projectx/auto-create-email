@@ -30,7 +30,11 @@ git clone https://github.com/anti-society-projectx/auto-create-email.git
 cd auto-create-email
 ```
 
-Установите зависимости удобным для себя способом, затем запустите приложение:
+Установите зависимости удобным для себя способом.
+```bash
+pip install .
+```
+Затем запустите приложение:
 
 ```bash
 python main.py
